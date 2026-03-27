@@ -170,7 +170,14 @@ export const shareNote = (req, res) => {
                     [noteId],
                     (err) => {
                         if (err) return res.status(500).json({ message: "Error sharing note", error: err });
-                        res.json({ message: "Note shared publicly" });
+                        // return canonical share link
+                        db.query("SELECT share_id FROM notes WHERE id = ?", [noteId], (err2, rows) => {
+                            if (err2) return res.status(500).json({ message: "Error fetching share id", error: err2 });
+                            const shareId = rows[0].share_id;
+                            const base = process.env.PUBLIC_URL || 'http://localhost:5173';
+                            const shareLink = `${String(base).replace(/\/$/, '')}/share/${shareId}`;
+                            res.json({ message: "Note shared publicly", shareId, shareLink });
+                        });
                     }
                 );
             } else if (sharedWith) {
@@ -187,7 +194,14 @@ export const shareNote = (req, res) => {
                         if (result.affectedRows === 0) {
                             return res.json({ message: "Note was already shared with this user" });
                         }
-                        res.json({ message: "Note shared with user" });
+                        // return canonical share link too
+                        db.query("SELECT share_id FROM notes WHERE id = ?", [noteId], (err2, rows) => {
+                            if (err2) return res.status(500).json({ message: "Error fetching share id", error: err2 });
+                            const shareId = rows[0].share_id;
+                            const base = process.env.PUBLIC_URL || 'http://localhost:5173';
+                            const shareLink = `${String(base).replace(/\/$/, '')}/share/${shareId}`;
+                            res.json({ message: "Note shared with user", shareId, shareLink });
+                        });
                     }
                 );
             } else {

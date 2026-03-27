@@ -15,7 +15,11 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('shareId');
     if (id) window.history.replaceState({}, '', window.location.pathname);
-    return id || null;
+    if (id) return id;
+    // also support path-style links: /share/:shareId
+    const path = window.location.pathname || '';
+    const m = path.match(/^\/share\/([-a-f0-9]{8,})/i);
+    return m ? m[1] : null;
   }, []);
 
   const handleLogin  = (userData) => setUser(userData);

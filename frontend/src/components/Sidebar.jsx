@@ -88,7 +88,7 @@ export default function Sidebar({
           <>
             <div className="user-details">
               <span className="user-email-text">{user?.email}</span>
-              <span className="user-role-text">Alumni Member</span>
+              <span className="user-role-text">Member (all over the world)</span>
             </div>
             <button className="logout-btn" onClick={onLogout} title="Sign out">
               <LogoutIcon />

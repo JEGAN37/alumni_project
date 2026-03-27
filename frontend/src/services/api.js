@@ -73,3 +73,9 @@ export const AdminAPI = {
   getUsers: () => apiFetch('/admin/users'),
 };
 
+// ---- Share helpers -------------------------------------
+export function makeShareUrl(shareId) {
+  const base = import.meta.env.VITE_PUBLIC_URL || window.location.origin;
+  return `${String(base).replace(/\/$/, '')}/share/${shareId}`;
+}
+

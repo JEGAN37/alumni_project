@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { NotesAPI, AuthAPI } from '../services/api.js';
+import { NotesAPI, AuthAPI, makeShareUrl } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { CloseIcon } from './Icons.jsx';
 
@@ -42,7 +42,8 @@ export default function ShareModal({ note, onClose }) {
 
   const toast = useToast();
 
-  const shareLink = note ? `${window.location.origin}?shareId=${note.share_id}` : '';
+  // Local shareLink state. Prefer canonical link returned by backend after sharing.
+  const [shareLinkState, setShareLinkState] = useState(() => note ? (note.share_id ? makeShareUrl(note.share_id) : '') : '');
 
   // ---- Load access list -----------------------------------------------
   const loadAccessList = useCallback(async () => {
@@ -69,9 +70,10 @@ export default function ShareModal({ note, onClose }) {
 
   // ---- Copy link -------------------------------------------------------
   const copyLink = () => {
-    navigator.clipboard.writeText(shareLink).catch(() => {
+    const link = shareLinkState || '';
+    navigator.clipboard.writeText(link).catch(() => {
       const el = document.createElement('textarea');
-      el.value = shareLink; document.body.appendChild(el);
+      el.value = link; document.body.appendChild(el);
       el.select(); document.execCommand('copy'); document.body.removeChild(el);
     });
     setCopied(true);
@@ -105,11 +107,34 @@ export default function ShareModal({ note, onClose }) {
     try {
       const res = await NotesAPI.share(note.id, { sharedWith: foundUser.id });
       setShareSuccess(res.message || `Shared with ${foundUser.email}`);
+      // If backend returned a canonical shareLink, use it
+      if (res.shareLink) {
+        setShareLinkState(res.shareLink);
+      } else if (res.shareId) {
+        setShareLinkState(makeShareUrl(res.shareId));
+      }
       toast('Note shared!', 'success');
       setFoundUser(null); setEmail('');
       loadAccessList();
     } catch (err) {
       setShareError(err.message);
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  // Make note public (owner only)
+  const makePublic = async () => {
+    setShareError(''); setShareSuccess(''); setSharing(true);
+    try {
+      const res = await NotesAPI.share(note.id, { isPublic: true });
+      setShareSuccess(res.message || 'Note shared publicly');
+      if (res.shareLink) setShareLinkState(res.shareLink);
+      else if (res.shareId) setShareLinkState(makeShareUrl(res.shareId));
+      toast('Note is now public', 'success');
+      loadAccessList();
+    } catch (err) {
+      setShareError(err.message || 'Failed to make public');
     } finally {
       setSharing(false);
     }

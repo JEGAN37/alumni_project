@@ -169,7 +169,7 @@ export default function SharedNotePage({ shareId, currentUser, onClose }) {
       <footer className="snv-footer">
         <span>Shared via </span>
         <a href="/">NoteHub</a>
-        <span> — The alumni notepad</span>
+  <span> — Notepad for people all over the world</span>
       </footer>
     </div>
   );

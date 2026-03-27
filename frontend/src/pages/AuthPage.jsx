@@ -171,7 +171,7 @@ export default function AuthPage({ onLogin }) {
             <span className="auth-panel-logo-text">NoteHub</span>
           </div>
           <h2 className="auth-panel-headline">Your notes,<br />organised and secure.</h2>
-          <p className="auth-panel-sub">The smart notepad built for alumni to capture ideas, share knowledge, and stay connected.</p>
+          <p className="auth-panel-sub">Share notes, collaborate , and keep ideas organized.</p>
           <div className="auth-feature-list">
             {[
               'Create and organise unlimited notes',
